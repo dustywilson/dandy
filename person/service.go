@@ -3,7 +3,6 @@ package person
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/go-kit/kit/endpoint"
 	mgo "gopkg.in/mgo.v2"
@@ -29,7 +28,7 @@ type service struct {
 }
 
 // NewService returns a Service
-func NewService(db *mgo.Database) Service {
+func NewService(db *mgo.Database) (Service, error) {
 	s := &service{
 		people: db.C("people"),
 	}
@@ -37,9 +36,9 @@ func NewService(db *mgo.Database) Service {
 		Key:    []string{"email"},
 		Unique: true,
 	}); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return s
+	return s, nil
 }
 
 func (s *service) Create(_ context.Context, person Person) (id bson.ObjectId, err error) {
@@ -85,7 +84,6 @@ func FindByIDEndpoint(svc Service) endpoint.Endpoint {
 
 func (s *service) FindByEmail(_ context.Context, email string) (person Person, err error) {
 	err = s.people.Find(bson.M{"email": email}).One(&person)
-	log.Printf("FindByEmail: %+v", person)
 	return
 }
 

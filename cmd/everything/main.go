@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -46,11 +44,16 @@ func init() {
 func main() {
 	mgoSession, err := mgo.Dial(mgoHosts)
 	if err != nil {
-		log.Fatalln(err)
+		println(err)
+		os.Exit(1)
 	}
 	defer mgoSession.Close()
 
-	personSvc := person.NewService(mgoSession.DB("person"))
+	personSvc, err := person.NewService(mgoSession.DB("person"))
+	if err != nil {
+		println(err)
+		os.Exit(1)
+	}
 
 	r := mux.NewRouter()
 
@@ -84,7 +87,8 @@ func main() {
 		encodeStringResponse,
 	))
 
-	log.Fatal(http.ListenAndServe(addr, r))
+	println(http.ListenAndServe(addr, r))
+	os.Exit(1)
 }
 
 func decodeSimpleIDRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -151,7 +155,7 @@ func encodeIDResponse(_ context.Context, w http.ResponseWriter, response interfa
 		return ErrInternalServerError
 	}
 
-	fmt.Fprint(w, id.Hex())
+	w.Write([]byte(id.Hex()))
 	return nil
 }
 
