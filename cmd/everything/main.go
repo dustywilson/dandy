@@ -33,7 +33,7 @@ func init() {
 	if v := os.Getenv("ADDR"); v != "" {
 		addr = v
 	}
-	flag.StringVar(&mgoHosts, "addr", addr, "HTTP service listens on this address")
+	flag.StringVar(&addr, "addr", addr, "HTTP service listens on this address")
 
 	if v := os.Getenv("MGO"); v != "" {
 		mgoHosts = v
