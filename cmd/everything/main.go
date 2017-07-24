@@ -69,23 +69,29 @@ func main() {
 		encodeJSONResponse,
 	))
 
-	r.Methods("GET").Path("/person/{id}").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/person/{id:[0-9A-Za-z]{12}}").Handler(httptransport.NewServer(
 		person.FindByIDEndpoint(personSvc),
 		decodeSimpleIDRequest,
 		encodeJSONResponse,
 	))
 
-	r.Methods("PUT").Path("/person/{id}").Handler(httptransport.NewServer(
+	r.Methods("PUT").Path("/person/{id:[0-9A-Za-z]{12}}").Handler(httptransport.NewServer(
 		person.UpdateEndpoint(personSvc),
 		decodeUpdatePersonRequest,
 		encodeIDResponse,
 	))
 
-	r.Methods("DELETE").Path("/person/{id}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/person/{id:[0-9A-Za-z]{12}}").Handler(httptransport.NewServer(
 		person.DeleteEndpoint(personSvc),
 		decodeSimpleIDRequest,
 		encodeStringResponse,
 	))
+
+	r.Methods("GET").Path("/person").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/person/", http.StatusSeeOther)
+	})
+
+	r.Methods("GET").PathPrefix("/person/").Handler(http.StripPrefix("/person/", http.FileServer(http.Dir("../../person/www"))))
 
 	println(http.ListenAndServe(addr, r))
 	os.Exit(1)
